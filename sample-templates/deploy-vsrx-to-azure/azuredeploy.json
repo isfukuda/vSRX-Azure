@@ -53,6 +53,13 @@
           },
           "defaultValue": "192.168.20.20"
         },
+	"vsrx-addr-ge-0-0-2": {
+          "type": "string",
+          "metadata": {
+            "description": "vSRX ge-0/0/2 address"
+          },
+          "defaultValue": "192.168.20.22"
+        },
         "vsrx-username": {
           "type": "string",
           "metadata": {
@@ -143,7 +150,9 @@
             "untrustNicName": "[concat('if-', parameters('vsrx-name'), '-ge-0-0-0')]",
             "untrustPrivateIP": "[parameters('vsrx-addr-ge-0-0-0')]",
             "trustNicName": "[concat('if-', parameters('vsrx-name'), '-ge-0-0-1')]",
-            "trustPrivateIP": "[parameters('vsrx-addr-ge-0-0-1')]"
+            "trustPrivateIP": "[parameters('vsrx-addr-ge-0-0-1')]",
+	    "trust2NicName": "[concat('if-', parameters('vsrx-name'), '-ge-0-0-2')]",
+            "trust2PrivateIP": "[parameters('vsrx-addr-ge-0-0-2')]"
         },
         "vnet-id": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnet-name'))]",
         "vnet-untrust-subnet-id": "[concat(variables('vnet-id'),'/subnets/', variables('vnet-untrust-subnet-name'))]",
@@ -371,6 +380,30 @@
              "enableIPForwarding": true
            }
         },
+	{
+           "apiVersion": "2016-03-30",
+           "type": "Microsoft.Network/networkInterfaces",
+           "name": "[variables('vsrxVM').trust2NicName]",
+           "location": "[resourceGroup().location]",
+           "dependsOn": [
+             "[concat('Microsoft.Network/virtualNetworks/', variables('vnet-name'))]"
+           ],
+           "properties": {
+             "ipConfigurations": [
+               {
+                 "name": "ipconfig1",
+                 "properties": {
+                   "privateIPAllocationMethod": "Static",
+                   "privateIPAddress": "[variables('vsrxVM').trust2PrivateIP]",
+                   "subnet": {
+                     "id": "[variables('vnet-trust-subnet-id')]"
+                   }
+                 }
+               }
+             ],
+             "enableIPForwarding": true
+           }
+        },
         {
           "apiVersion": "2016-03-30",
           "name": "[variables('vsrxVM').vmName]",
@@ -380,7 +413,8 @@
            "dependsOn": [
              "[concat('Microsoft.Network/networkInterfaces/', variables('vsrxVM').mgtNicName)]",
              "[concat('Microsoft.Network/networkInterfaces/', variables('vsrxVM').untrustNicName)]",
-             "[concat('Microsoft.Network/networkInterfaces/', variables('vsrxVM').trustNicName)]"
+             "[concat('Microsoft.Network/networkInterfaces/', variables('vsrxVM').trustNicName)]",
+             "[concat('Microsoft.Network/networkInterfaces/', variables('vsrxVM').trust2NicName)]"
            ],
           "properties": {
               "hardwareProfile": {
@@ -425,7 +459,13 @@
                     "properties": {
                         "primary": false
                     }
-                  }
+                  },
+		  {
+                    "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('vsrxVM').trust2NicName)]",
+                    "properties": {
+                        "primary": false
+                    }
+                  }	
                 ]
               },
               "diagnosticsProfile": {

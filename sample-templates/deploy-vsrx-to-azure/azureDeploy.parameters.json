@@ -20,11 +20,14 @@
     "vsrx-addr-ge-0-0-1": {
       "value": "192.168.20.20"
     },
+    "vsrx-addr-ge-0-0-2": {
+      "value": "192.168.20.22"
+    },
     "vsrx-username": {
-      "value": "demo"
+      "value": "azureuser"
     },
     "vsrx-password": {
-      "value": "Demo123456"
+      "value": "azureuser22"
     },
     "vnet-name": {
       "value": "vsrx-vnet"
